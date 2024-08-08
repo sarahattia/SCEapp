@@ -13,8 +13,8 @@ const firebaseConfig = {
   projectId: "sce-final-project-sk",
   storageBucket: "sce-final-project-sk.appspot.com",
   messagingSenderId: "428683332915",
-  appId: "1:428683332915:web:1febeb59cd0f0ad48e8246",
-  measurementId: "G-40DBRJN3SZ"
+  appId: "1:428683332915:web:01a0e436520ce55b8e8246",
+  measurementId: "G-ZNLJXZ294P"
 };
 
 // Initialize Firebase
