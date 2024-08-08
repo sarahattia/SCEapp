@@ -21,7 +21,7 @@ export default function SignInPage({ navigation }) {
     }
 
     if (email === fakeEmail && password === fakePassword) {
-      navigation.navigate('Search');
+      navigation.navigate('Main');
      } else {
       Alert.alert('Invalid email or password');
     }

@@ -14,17 +14,17 @@ const Stack = createNativeStackNavigator();
 
 function MyStack() {
   return (
-    
     <Stack.Navigator initialRouteName="Home">
-      <Stack.Screen name="Home" component={HomeScreen} options={{ headerTitle: '' }} />
-      <Stack.Screen name="SignUp" component={SignUpPage} options={{ headerTitle: '' }} />
-      <Stack.Screen name="SignIn" component={SignInPage} options={{ headerTitle: '' }} />
-      <Stack.Screen name="Main" component={MainPage} options={{ headerTitle: '' }} />
-      <Stack.Screen name="Personal" component={PersonalAccount} options={{ headerTitle: '' }} />
-      <Stack.Screen name="Map" component={MapScreen} options={{ headerTitle: '' }} />
-      <Stack.Screen name="Search" component={SearchScreen} options={{ headerTitle: '' }} />
-      <Stack.Screen name="Payment" component={PaymentScreen} options={{headerTitle: ''}}/>
-    </Stack.Navigator>
+    <Stack.Screen name="Home" component={HomeScreen} options={{ headerTitle: '' }} />
+    <Stack.Screen name="SignUp" component={SignUpPage} options={{ headerTitle: '' }} />
+    <Stack.Screen name="SignIn" component={SignInPage} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Main" component={MainPage} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Personal" component={PersonalAccount} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Map" component={MapScreen} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Search" component={SearchScreen} options={{ headerTitle: '' }} />
+    <Stack.Screen name="Payment" component={PaymentScreen} options={{ headerTitle: '' }} />
+  </Stack.Navigator>
+  
   
   );
 }
