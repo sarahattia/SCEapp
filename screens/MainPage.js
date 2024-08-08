@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/Ionicons';
 import SearchScreen from './SearchScreen';
 import PersonalAccount from './PersonalAccount';
 
+
 const Tab = createBottomTabNavigator();
 
 export default function MainPage() {
