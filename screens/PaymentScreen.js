@@ -31,7 +31,6 @@ const PaymentScreen = ({ route, navigation }) => {
         longitudeDelta: 0.0421,
       });
 
-      // Récupérer l'adresse sélectionnée depuis les paramètres de la route
       const { selectedAddress } = route.params;
       setSelectedAddress(selectedAddress);
     })();
@@ -44,11 +43,9 @@ const PaymentScreen = ({ route, navigation }) => {
         console.error('Failed to open BIT:', err);
       });
     } else {
-      Alert.alert('Payment', 'Payment method selected: Cash');
+      Alert.alert('Wait the owner answer.');
     }
-    // Mettre à jour la disponibilité de l'élément et naviguer
-    // Ex. : await updateItemAvailability(selectedAddress.id, false);
-    // navigation.navigate('PersonalAccount');
+    
   };
 
   const handleGoToPark = () => {
