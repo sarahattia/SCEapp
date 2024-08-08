@@ -1,53 +1,119 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { useRoute } from '@react-navigation/native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, TouchableOpacity, Alert, StyleSheet, ScrollView, Linking } from 'react-native';
+import MapView, { Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
+import { RadioButton } from 'react-native-paper';
+import axios from 'axios';
 
-const exampleAddresses = [
-  {
-    id: '1',
-    name: 'Hatzionut 21, Ashdod, Israel',
-    coordinate: { latitude: 31.7851172, longitude: 34.6409275 },
-    available: true,
-    size: 'car',
-    option: 'true',
-  },
-  {
-    id: '2',
-    name: 'Nahal Lahish 45, Ashdod, Israel',
-    coordinate: { latitude: 31.787025, longitude: 34.6337443 },
-    available: true,
-    size: 'motorcycle',
-    option: 'true',
-  },
-  {
-    id: '3',
-    name: 'Kineret 59, Ashdod, Israel',
-    coordinate: { latitude: 31.7797933, longitude: 34.6289904 },
-    available: true,
-    size: 'car',
-    option: 'true',
-  },  
-];
+const GOOGLE_MAPS_API_KEY = 'AIzaSyATIT0OmRrgvC5iKf_2UP-HqN1Qb6SbwVE';
 
-const PaymentScreen = ({navigation,route}) => {
-  const { selectedAddress } = route.params; 
+const PaymentScreen = ({ route, navigation }) => {
+  const [location, setLocation] = useState(null);
+  const [mapRegion, setMapRegion] = useState(null);
+  const [selectedAddress, setSelectedAddress] = useState(null);
+  const [paymentMethod, setPaymentMethod] = useState('cash');
+  const [errorMsg, setErrorMsg] = useState(null);
 
-  if (!selectedAddress) {
-    return (
-      <View style={styles.container}>
-        <Text>No address selected</Text>
-      </View>
-    );
-  }
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setErrorMsg('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      setLocation(location);
+      setMapRegion({
+        latitude: location.coords.latitude,
+        longitude: location.coords.longitude,
+        latitudeDelta: 0.0922,
+        longitudeDelta: 0.0421,
+      });
+
+      // Récupérer l'adresse sélectionnée depuis les paramètres de la route
+      const { selectedAddress } = route.params;
+      setSelectedAddress(selectedAddress);
+    })();
+  }, [route.params]);
+
+  const handleConfirm = () => {
+    if (paymentMethod === 'bit') {
+      const bitPayUrl = 'https://www.bitpay.co.il/he';
+      Linking.openURL(bitPayUrl).catch((err) => {
+        console.error('Failed to open BIT:', err);
+      });
+    } else {
+      Alert.alert('Payment', 'Payment method selected: Cash');
+    }
+    // Mettre à jour la disponibilité de l'élément et naviguer
+    // Ex. : await updateItemAvailability(selectedAddress.id, false);
+    // navigation.navigate('PersonalAccount');
+  };
+
+  const handleGoToPark = () => {
+    if (location && selectedAddress) {
+      const { latitude, longitude } = location.coords;
+      const wazeUrl = `waze://?ll=${latitude},${longitude}&navigate=yes&to=${encodeURIComponent(selectedAddress.name)}`;
+      Linking.openURL(wazeUrl).catch((err) => {
+        console.error('Failed to open Waze:', err);
+      });
+    } else {
+      Alert.alert('Error', 'Location or address not available');
+    }
+  };
 
   return (
     <View style={styles.container}>
-      <Text>Selected Address:</Text>
-      <Text>{selectedAddress.name}</Text>
-      <Text>
-        {selectedAddress.coordinate.latitude}, {selectedAddress.coordinate.longitude}
-      </Text>
-      {/* Affichez les autres détails de selectedAddress si nécessaire */}
+      <MapView
+        style={styles.map}
+        region={mapRegion || {
+          latitude: location?.coords.latitude || 31.8044,
+          longitude: location?.coords.longitude || 34.6553,
+          latitudeDelta: 0.0922,
+          longitudeDelta: 0.0421,
+        }}
+      >
+        {location && (
+          <Marker
+            coordinate={{
+              latitude: location.coords.latitude,
+              longitude: location.coords.longitude,
+            }}
+            title="Current Location"
+            description="This is where you are"
+            pinColor="blue"
+          />
+        )}
+        {selectedAddress && (
+          <Marker
+            coordinate={selectedAddress.coordinate}
+            title={selectedAddress.name}
+            pinColor="red"
+          />
+        )}
+      </MapView>
+      <ScrollView style={styles.details}>
+        <Text style={styles.header}>You want to reserve this park:</Text>
+        <Text style={styles.address}>{selectedAddress?.name}</Text>
+        {selectedAddress?.option === 'true' && (
+          <Text style={styles.option}>Electrical charge available</Text>
+        )}
+        <Text style={styles.header}>How do you want to pay?</Text>
+        <RadioButton.Group
+          value={paymentMethod}
+          onValueChange={(value) => setPaymentMethod(value)}
+        >
+          <RadioButton.Item label="Pay with BIT" value="bit" />
+          <RadioButton.Item label="Pay with Cash to the Owner" value="cash" />
+        </RadioButton.Group>
+        <TouchableOpacity style={styles.confirmButton} onPress={handleConfirm}>
+          <Text style={styles.confirmButtonText}>Confirm</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.goToParkButton} onPress={handleGoToPark}>
+          <Text style={styles.goToParkButtonText}>Go to the Park</Text>
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -55,11 +121,59 @@ const PaymentScreen = ({navigation,route}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  map: {
+    flex: 0.6,
+    width: '100%',
+  },
+  details: {
+    flex: 0.4,
+    backgroundColor: '#fff',
+    padding: 10,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  header: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 10,
+  },
+  address: {
+    fontSize: 16,
+    marginTop: 20,
+  },
+  option: {
+    fontSize: 16,
+    color: 'green',
+    marginTop: 10,
+  },
+  confirmButton: {
+    backgroundColor: '#FFA500',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  confirmButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  goToParkButton: {
+    backgroundColor: '#FFA500',
+    padding: 10,
+    borderRadius: 5,
+    marginTop: 10,
+  },
+  goToParkButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    textAlign: 'center',
   },
 });
-
-// test 
 
 export default PaymentScreen;
